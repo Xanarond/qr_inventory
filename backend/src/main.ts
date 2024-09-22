@@ -33,7 +33,7 @@ async function bootstrap() {
     ],
   });
   const config = new DocumentBuilder()
-    .setTitle('Инвенторизация RESTAPI')
+    .setTitle('Инвентаризация RESTAPI')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);

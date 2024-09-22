@@ -2,10 +2,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Установка зависимостей и сборка в одном слое
 COPY package.json yarn.lock ./
-CMD ["npm", "i", "-g", "yarn"]
-RUN yarn
-RUN yarn add pm2 --global
+RUN yarn install
 
 COPY . .
 

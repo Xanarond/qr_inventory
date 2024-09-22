@@ -16,19 +16,23 @@ services:
     ports:
       - "5432:5432"
 
-#  frontend:
-#    container_name: qr_frontend
-#    build: ./frontend
-#    ports:
-#      - "8080:8080"
-#
-#  backend:
-#    container_name: qr_backend
-#    build: ./backend
-#    ports:
-#      - "3001:3001"
-#    depends_on:
-#      - postgres
+  frontend:
+    container_name: qr_frontend
+    build: ../frontend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../frontend/.env  # Укажите путь к файлу с переменными окружения для фронтенда
+
+  backend:
+    container_name: qr_backend
+    build: ../backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    env_file:
+      - ../backend/.env  # Укажите путь к файлу с переменными окружения для бэкенда
 
   redis:
     image: "redis:latest"
@@ -40,25 +44,25 @@ services:
       - ./redis_data:/data
 
   
-  redis-commander:
-    container_name: red_commander
-    restart: always
-    image: "rediscommander/redis-commander:latest"
-    ports:
-      - "8082:8081"
-    depends_on:
-      - redis
-    environment:
-      - REDIS_HOSTS=local:redis:6379
+  # redis-commander:
+  #   container_name: red_commander
+  #   restart: always
+  #   image: "rediscommander/redis-commander:latest"
+  #   ports:
+  #     - "8082:8081"
+  #   depends_on:
+  #     - redis
+  #   environment:
+  #     - REDIS_HOSTS=local:redis:6379
 
-  adminer:
-    image: adminer
-    container_name: adminer
-    restart: always
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
+  # adminer:
+  #   image: adminer
+  #   container_name: adminer
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - postgres
 
 #  pgadmin:
 #    image: dpage/pgadmin4
