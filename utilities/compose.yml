@@ -3,7 +3,7 @@ version: "3.9"
 services:
   postgres:
     image: "postgres:14.8-alpine3.18"
-    container_name: postgres
+    container_name: inventory_postgres
     restart: always
     environment:
       POSTGRES_DB: "inventory"
@@ -11,70 +11,94 @@ services:
       POSTGRES_PASSWORD: "123456"
       PGDATA: /var/lib/postgresql/data
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data:Z
+      - ./postgres-data:/var/lib/postgresql/data
       - ./backups:/backups:Z
-    ports:
-      - "5432:5432"
-
-  frontend:
-    container_name: qr_frontend
-    build: ../frontend
-    ports:
-      - "8080:8080"
-    env_file:
-      - ../frontend/.env  # Укажите путь к файлу с переменными окружения для фронтенда
-
-  backend:
-    container_name: qr_backend
-    build: ../backend
-    ports:
-      - "3001:3001"
-    depends_on:
-      - postgres
-    env_file:
-      - ../backend/.env  # Укажите путь к файлу с переменными окружения для бэкенда
+    expose:
+      - '5432'
+    networks:
+      - inventory_net
 
   redis:
     image: "redis:latest"
-    container_name: redis
+    container_name: inventory_redis
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - ./redis_data:/data
+    expose:
+      - '6379'
+    networks:
+      - inventory_net
 
-  
-  # redis-commander:
-  #   container_name: red_commander
-  #   restart: always
-  #   image: "rediscommander/redis-commander:latest"
-  #   ports:
-  #     - "8082:8081"
-  #   depends_on:
-  #     - redis
-  #   environment:
-  #     - REDIS_HOSTS=local:redis:6379
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - inventory_net
 
-  # adminer:
-  #   image: adminer
-  #   container_name: adminer
-  #   restart: always
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - postgres
+  frontend:
+    container_name: inventory_frontend
+    build: ../frontend
+    env_file:
+      - ../frontend/.env # Укажите путь к файлу с переменными окружения для фронтенда
+    networks:
+      - inventory_net
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.inventory.entryPoints=http
+      - traefik.http.routers.inventory.middlewares=redirect-to-https
+      - 'traefik.http.routers.inventory.rule=Host(`inventory.kos-devpoint.ru`) && PathPrefix(`/`)'
+      - traefik.http.routers.inventory-secure.entryPoints=https
+      - traefik.http.routers.inventory-secure.middlewares=gzip
+      - 'traefik.http.routers.inventory-secure.rule=Host(`inventory.kos-devpoint.ru`) && PathPrefix(`/`)'
+      - traefik.http.routers.inventory-secure.tls.certresolver=letsencrypt
+      - traefik.http.routers.inventory-secure.tls=true
+      - traefik.http.services.inventory-secure.loadbalancer.server.port=4173
 
-#  pgadmin:
-#    image: dpage/pgadmin4
-#    container_name: pgadmin
-#    restart: always
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: mypgadminemail@example.com
-#      PGADMIN_DEFAULT_PASSWORD: mypgadminpassword
-#    ports:
-#      - "5050:80"
+  backend:
+    container_name: inventory_backend
+    build: ../backend
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ../backend/.env
+    ports:
+      - "3001:3001" 
+    expose:
+      - '3001'
+    networks:
+      - inventory_net
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.api-inventory.entryPoints=http
+      - traefik.http.routers.api-inventory.middlewares=redirect-to-https
+      - 'traefik.http.routers.api-inventory.rule=Host(`api.inventory.kos-devpoint.ru`) && PathPrefix(`/`)'
+      - traefik.http.routers.api-inventory-secure.entryPoints=https
+      - traefik.http.routers.api-inventory-secure.middlewares=gzip
+      - 'traefik.http.routers.api-inventory-secure.rule=Host(`api.inventory.kos-devpoint.ru`) && PathPrefix(`/`)'
+      - traefik.http.routers.api-inventory-secure.tls.certresolver=letsencrypt
+      - traefik.http.routers.api-inventory-secure.tls=true
+      - traefik.http.services.api-inventory-secure.loadbalancer.server.port=3001
+
 
 volumes:
   data:
   redis:
 
+
+networks:
+  inventory_net:
+    external: true
+  coolify:
+    external: true
