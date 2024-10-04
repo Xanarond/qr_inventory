@@ -18,7 +18,7 @@ import { AppController } from './app.controller';
     UsersModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: 'inventory_postgres',
       port: 5432,
       username: 'root',
       password: '123456',
@@ -32,4 +32,4 @@ import { AppController } from './app.controller';
   controllers: [AppController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

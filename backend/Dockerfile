@@ -1,23 +1,23 @@
 # Используем официальный образ Node.js
-FROM node:20-alpine
+FROM node:18-alpine
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
 # Копируем package.json и yarn.lock для установки зависимостей
-COPY package.json yarn.lock ./
-
+COPY package.json ./ 
+ 
 # Устанавливаем зависимости
-RUN npm install
+RUN yarn install
 
 # Копируем все остальные файлы в контейнер
 COPY . .
 
 # Собираем проект
-RUN npm run build
+RUN yarn run build
 
 # Указываем порт, который будет использоваться
-EXPOSE 3000
+EXPOSE 3001
 
 # Запускаем приложение
 CMD ["node", "dist/main"]

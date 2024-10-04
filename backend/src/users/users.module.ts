@@ -14,4 +14,4 @@ import { RolesEntity } from './entities/roles.entity';
   providers: [UsersService, AuthService, JwtService],
   exports: [TypeOrmModule],
 })
-export class UsersModule {}
+export class UsersModule { }

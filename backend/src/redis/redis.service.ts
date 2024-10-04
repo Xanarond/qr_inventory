@@ -3,10 +3,14 @@ import * as Instance from 'ioredis';
 
 @Injectable()
 export class RedisService {
-  private readonly client: Instance.Redis;
+  private client: Instance.Redis;
 
   constructor() {
-    this.client = new Instance.Redis();
+    try {
+      this.client = new Instance.Redis({ host: 'inventory_redis', port: 6379 });
+    } catch (error) {
+      console.error('Ошибка подключения к Redis:', error);
+    }
   }
 
   getClient(): Instance.Redis {

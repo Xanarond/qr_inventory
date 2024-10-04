@@ -28,6 +28,7 @@ export class InventoryService {
 
   async addItems(item: Inventory[]) {
     try {
+      console.log(item)
       await this.inventoryRepository.save(item);
       await this.insertQr(item);
     } catch (error) {

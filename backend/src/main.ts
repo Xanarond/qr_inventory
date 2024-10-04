@@ -7,8 +7,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('/api');
   app.enableCors({
-    origin: `http://${process.env.HOST}:${process.env.CLIENT_PORT}`,
-    credentials: true,
+    origin: `*`,
+    credentials: false,
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Origin',
@@ -38,7 +38,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document); // /docs - путь к документации swagger
-  await app.listen(process.env.SERVER_PORT, process.env.HOST);
+  console.log(`Server is running on port ${process.env.SERVER_PORT} ${"inventory_backend"}`);
+  await app.listen(process.env.SERVER_PORT, "inventory_backend");
 }
 
 (async () => {
